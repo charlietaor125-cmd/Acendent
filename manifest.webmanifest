@@ -1,0 +1,9 @@
+{
+"name":"ascended — Hunter System",
+"short_name":"ascended",
+"start_url":"./",
+"display":"standalone",
+"background_color":"#050814",
+"theme_color":"#050814",
+"icons":[{"src":"logo.png","sizes":"245x205","type":"image/png","purpose":"any maskable"}]
+}
