@@ -1,0 +1,12 @@
+{
+  "name":"ASCEND — Hunter System",
+  "short_name":"ASCEND",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#060a13",
+  "theme_color":"#060a13",
+  "description":"A gamified personal progression system.",
+  "icons":[
+    {"src":"logo.png","sizes":"1536x1536","type":"image/png","purpose":"any maskable"}
+  ]
+}
