@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b16">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Ascend — RPG Progress System</title>
+<style>
+:root{--bg:#070b16;--panel:#0d1424;--panel2:#111b2f;--text:#edf4ff;--muted:#8ea0bc;--accent:#62b6ff;--accent2:#9b7cff;--good:#49e39a;--danger:#ff647c;--line:#22314b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#101b35 0,#070b16 42%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.app{max-width:720px;margin:auto;padding:18px 16px 96px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.brand{font-weight:900;letter-spacing:.08em}.rank{font-size:12px;color:var(--accent);border:1px solid #31557d;padding:7px 10px;border-radius:999px}
+.card{background:linear-gradient(145deg,#10192b,#0b1220);border:1px solid var(--line);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 12px 35px #0005}
+.hero{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}.level{font-size:46px;font-weight:900;line-height:1}.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.1em}
+.xpbar{height:10px;background:#172238;border-radius:99px;overflow:hidden;margin:12px 0 7px}.xpfill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.35s}
+.xprow{display:flex;justify-content:space-between;color:var(--muted);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}.stat{background:#0a1120;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.stat b{display:block;font-size:20px}.stat span{color:var(--muted);font-size:11px}
+h2{font-size:16px;margin:4px 0 12px}.quest{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}.quest:last-child{border:0}.quest input{width:22px;height:22px;accent-color:var(--accent)}.quest-main{flex:1}.quest-title{font-weight:700}.quest-meta{font-size:12px;color:var(--muted);margin-top:3px}.done .quest-title{text-decoration:line-through;color:#71819b}
+button{border:0;color:white;background:linear-gradient(135deg,#2774c7,#7659cf);padding:11px 14px;border-radius:12px;font-weight:800;cursor:pointer}.ghost{background:#151f33;border:1px solid var(--line)}.danger{background:#311621;border:1px solid #5e2635;color:#ff9aaa}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{color:var(--good);font-size:13px;min-height:18px}.empty{color:var(--muted);font-size:13px;text-align:center;padding:10px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#080d18ee;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5}nav .navin{width:min(720px,100%);display:grid;grid-template-columns:repeat(3,1fr)}nav button{background:transparent;border-radius:0;color:var(--muted);padding:14px 6px;font-size:12px}nav button.active{color:var(--accent)}
+.page{display:none}.page.active{display:block}
+input[type=text],input[type=number]{width:100%;background:#080f1c;color:var(--text);border:1px solid var(--line);padding:12px;border-radius:12px;outline:none}
+.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 110px;gap:9px}
+.small{font-size:12px;color:var(--muted)}
+@media(min-width:600px){.stats{grid-template-columns:repeat(6,1fr)}.app{padding-top:30px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><div class="brand">ASCEND</div><div class="rank" id="rank">RANK E</div></div>
+
+  <section id="home" class="page active">
+    <div class="card hero">
+      <div><div class="label">Current level</div><div class="level" id="level">1</div><div class="xpbar"><div class="xpfill" id="xpfill"></div></div><div class="xprow"><span id="xptext">0 / 100 XP</span><span id="nexttext">100 XP to level up</span></div></div>
+      <div style="text-align:center"><div class="label">Streak</div><div class="level" style="font-size:34px" id="streak">0</div><div class="small">days</div></div>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="card"><h2>Daily Quests</h2><div id="daily"></div><div class="notice" id="message"></div></div>
+  </section>
+
+  <section id="quests" class="page">
+    <div class="card"><h2>Create Quest</h2><div class="form">
+      <input id="qname" type="text" placeholder="Quest name">
+      <div class="row"><input id="qxp" type="number" min="1" value="25" placeholder="XP"><button onclick="addQuest()">Add</button></div>
+    </div></div>
+    <div class="card"><h2>Quest Log</h2><div id="questlog"></div></div>
+  </section>
+
+  <section id="profile" class="page">
+    <div class="card"><h2>Hunter Profile</h2><p class="small">Your progress is stored locally on this device. No account required.</p>
+      <div class="actions"><button class="ghost" onclick="exportData()">Export Save</button><button class="danger" onclick="resetData()">Reset Progress</button></div>
+    </div>
+    <div class="card"><h2>How progression works</h2><p class="small">Complete quests to earn XP. Every level grants a stat point. Keep completing daily quests to build your streak.</p></div>
+  </section>
+</main>
+<nav><div class="navin">
+  <button class="active" onclick="showPage('home',this)">Dashboard</button>
+  <button onclick="showPage('quests',this)">Quests</button>
+  <button onclick="showPage('profile',this)">Profile</button>
+</div></nav>
+
+<script>
+const KEY='ascend_save_v1';
+const defaults={
+  level:1,xp:0,streak:0,lastDaily:null,
+  stats:{STR:5,AGI:5,INT:5,VIT:5,LUK:5},
+  quests:[
+    {id:1,name:'Move for 20 minutes',xp:30,daily:true,done:false},
+    {id:2,name:'Study / practise for 25 minutes',xp:35,daily:true,done:false},
+    {id:3,name:'Drink water regularly',xp:20,daily:true,done:false}
+  ],
+  completed:0
+};
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||structuredClone(defaults);
+
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function today(){return new Date().toISOString().slice(0,10)}
+function resetDaily(){
+  if(state.lastDaily!==today()){
+    state.quests.forEach(q=>{if(q.daily)q.done=false});
+  }
+}
+function rank(){return state.level>=50?'S':state.level>=30?'A':state.level>=20?'B':state.level>=10?'C':state.level>=5?'D':'E'}
+function need(){return 100+(state.level-1)*25}
+function gainXP(amount){
+  state.xp+=amount; state.completed++;
+  while(state.xp>=need()){state.xp-=need();state.level++;state.stats.STR++;state.stats.AGI++;state.stats.INT++;state.stats.VIT++;state.stats.LUK++; showMessage('LEVEL UP! +1 to every stat')}
+}
+function complete(id){
+  const q=state.quests.find(x=>x.id===id); if(!q||q.done)return;
+  q.done=true; gainXP(q.xp);
+  if(state.quests.filter(x=>x.daily).every(x=>x.done)){
+    if(state.lastDaily!==today()) state.streak++;
+    state.lastDaily=today();
+    gainXP(50); showMessage('Daily clear! Bonus +50 XP');
+  }
+  save();
+}
+function addQuest(){
+  const name=document.getElementById('qname').value.trim(), xp=Math.max(1,Number(document.getElementById('qxp').value)||25);
+  if(!name)return;
+  state.quests.push({id:Date.now(),name,xp,daily:false,done:false});
+  document.getElementById('qname').value=''; save();
+}
+function deleteQuest(id){state.quests=state.quests.filter(q=>q.id!==id);save()}
+function showMessage(t){const el=document.getElementById('message');el.textContent=t;setTimeout(()=>{el.textContent=''},2200)}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function render(){
+  resetDaily();
+  document.getElementById('level').textContent=state.level;
+  document.getElementById('rank').textContent='RANK '+rank();
+  document.getElementById('streak').textContent=state.streak;
+  const n=need(); document.getElementById('xptext').textContent=`${state.xp} / ${n} XP`; document.getElementById('nexttext').textContent=`${n-state.xp} XP to level up`;
+  document.getElementById('xpfill').style.width=Math.min(100,state.xp/n*100)+'%';
+  document.getElementById('stats').innerHTML=Object.entries(state.stats).map(([k,v])=>`<div class="stat"><b>${v}</b><span>${k}</span></div>`).join('');
+  document.getElementById('daily').innerHTML=state.quests.filter(q=>q.daily).map(q=>questHTML(q,false)).join('')||'<div class="empty">No daily quests.</div>';
+  document.getElementById('questlog').innerHTML=state.quests.map(q=>questHTML(q,!q.daily)).join('')||'<div class="empty">No quests yet.</div>';
+}
+function questHTML(q,del){
+ return `<div class="quest ${q.done?'done':''}">
+ <input type="checkbox" ${q.done?'checked':''} onchange="complete(${q.id})">
+ <div class="quest-main"><div class="quest-title">${escapeHTML(q.name)}</div><div class="quest-meta">+${q.xp} XP ${q.daily?'· Daily':''}</div></div>
+ ${del?`<button class="danger" onclick="deleteQuest(${q.id})">×</button>`:''}</div>`
+}
+function escapeHTML(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function exportData(){
+ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}), a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ascend-save.json';a.click();URL.revokeObjectURL(a.href)
+}
+function resetData(){if(confirm('Reset all progress?')){state=structuredClone(defaults);save()}}
+render();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>

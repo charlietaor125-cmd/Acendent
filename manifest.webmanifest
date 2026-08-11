@@ -1,0 +1,9 @@
+{
+  "name":"Ascend — RPG Progress System",
+  "short_name":"Ascend",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#070b16",
+  "theme_color":"#070b16",
+  "description":"A gamified personal progression dashboard."
+}
